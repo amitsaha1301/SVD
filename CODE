@@ -1,0 +1,44 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import io, color
+
+# load your own path
+image_path = '/content/Boa Hancock from One Piece.jpeg'
+image = io.imread(image_path, as_gray = True)
+
+# convert image to a 2D array
+myself_face = image
+
+U, S, V = np.linalg.svd(myself_face, full_matrices = False)
+
+plt.figure(figsize = (6, 6))
+plt.imshow(myself_face, cmap = 'gray')
+plt.title(f'original image with k = {len(S)}')
+plt.axis('off')
+plt.show()
+
+def quality(k):
+  num, den = 0, 0
+  for i in S:
+    den += i**2
+  for j in S[:k]:
+    num += j**2
+  return num/den
+
+def reconstruct_image(U, S, V, k):
+  S_reduced = np.diag(S[:k])
+  U_reduced = U[:, :k]
+  V_reduced = V[:k, :]
+  return np.dot(U_reduced, np.dot(S_reduced, V_reduced))
+
+k_value = [5, 20, 50, 100, 200]
+
+plt.figure(figsize = (10, 10))
+for i, k in enumerate(k_value):
+  compressed_image = reconstruct_image(U, S, V, k)
+  plt.subplot(2, 3, i+1)
+  plt.imshow(compressed_image, cmap = 'gray')
+  plt.title(f'k = {k}. Quality = {round(quality(k), 3)}')
+  plt.axis('off')
+
+plt.show()
